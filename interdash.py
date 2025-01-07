@@ -29,8 +29,9 @@ data['Start Date'] = pd.to_datetime(data['Start Date'], errors='coerce')
 # Ensure 'Start Date' is normalized (date without time component)
 data['Start Date'] = data['Start Date'].dt.normalize()
 
-today = pd.to_datetime('today').normalize()
+today = pd.Timestamp.today().tz_localize('UTC')  # Convert to UTC
 last_12_weeks_data = data[data['Start Date'] >= today - pd.Timedelta(weeks=12)]
+
 
 last_12_weeks_data['Week'] = last_12_weeks_data['Start Date'].dt.to_period('W')
 last_12_weeks_data['Moving Time (min)'] = pd.to_numeric(last_12_weeks_data['Moving Time (min)'], errors='coerce')
