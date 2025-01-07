@@ -23,16 +23,18 @@ st.title("Strava Activities Dashboard")
 # Load and display data
 data = load_data()
 
-# Use .loc[] for column assignment
-data.loc[:, 'Start Date'] = pd.to_datetime(data['Start Date'], errors='coerce').dt.tz_localize(None)
-data.loc[:, 'Start Date'] = data['Start Date'].dt.normalize()
+# Convert 'Start Date' column to datetime and handle errors (invalid parsing) by coercing them to NaT
+data['Start Date'] = pd.to_datetime(data['Start Date'], errors='coerce')
+
+# Ensure 'Start Date' is normalized (date without time component)
+data['Start Date'] = data['Start Date'].dt.normalize()
 
 today = pd.to_datetime('today').normalize()
 last_12_weeks_data = data[data['Start Date'] >= today - pd.Timedelta(weeks=12)]
 
-last_12_weeks_data.loc[:, 'Week'] = last_12_weeks_data['Start Date'].dt.to_period('W')
-last_12_weeks_data.loc[:, 'Moving Time (min)'] = pd.to_numeric(last_12_weeks_data['Moving Time (min)'], errors='coerce')
-last_12_weeks_data.loc[:, 'Distance (km)'] = pd.to_numeric(last_12_weeks_data['Distance (km)'], errors='coerce')
+last_12_weeks_data['Week'] = last_12_weeks_data['Start Date'].dt.to_period('W')
+last_12_weeks_data['Moving Time (min)'] = pd.to_numeric(last_12_weeks_data['Moving Time (min)'], errors='coerce')
+last_12_weeks_data['Distance (km)'] = pd.to_numeric(last_12_weeks_data['Distance (km)'], errors='coerce')
 
 last_12_weeks_data = last_12_weeks_data.dropna(subset=['Moving Time (min)', 'Distance (km)'])
 
@@ -80,7 +82,7 @@ with col2:
         'Distance (km)': 'sum'
     }).reset_index()
 
-    weekly_data.loc[:, 'Week'] = weekly_data['Week'].apply(lambda x: f"{x.start_time.day:02}/{x.start_time.month:02}")
+    weekly_data['Week'] = weekly_data['Week'].apply(lambda x: f"{x.start_time.day:02}/{x.start_time.month:02}")
 
     # Displaying the information with time in hours (XX.XX hours format) and bold pattern for all three columns
     time_in_hours = weekly_data['Moving Time (min)'] / 60
