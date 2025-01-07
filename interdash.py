@@ -10,7 +10,10 @@ st.set_page_config(layout="wide")
 # Load and convert the XLSX data to DataFrame
 @st.cache_data(ttl=1800)  # Cache the data for 30 minutes
 def load_data():
-    file_path = os.path.join(os.path.expanduser("~"), "Desktop", "Strava_All_ActivitiesNew.xlsx")
+    # Check the current working directory for debugging
+    st.write("Current Working Directory:", os.getcwd())
+
+    file_path = "Strava_All_ActivitiesNew.xlsx"  # File is in the same directory
     data = pd.read_excel(file_path)
     return data
 
@@ -176,5 +179,3 @@ with col2:
     time_in_hours = selected_data['Moving Time (min)'] / 60
     distance = selected_data['Distance (km)']
     elevation = selected_data['Total Elevation Gain (m)']
-
-
