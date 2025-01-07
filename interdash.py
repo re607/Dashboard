@@ -23,15 +23,17 @@ st.title("Strava Activities Dashboard")
 # Load and display data
 data = load_data()
 
-data['Start Date'] = pd.to_datetime(data['Start Date'], errors='coerce').dt.tz_localize(None)
-data['Start Date'] = data['Start Date'].dt.normalize()
+# Use .loc[] for column assignment
+data.loc[:, 'Start Date'] = pd.to_datetime(data['Start Date'], errors='coerce').dt.tz_localize(None)
+data.loc[:, 'Start Date'] = data['Start Date'].dt.normalize()
 
 today = pd.to_datetime('today').normalize()
 last_12_weeks_data = data[data['Start Date'] >= today - pd.Timedelta(weeks=12)]
 
-last_12_weeks_data['Week'] = last_12_weeks_data['Start Date'].dt.to_period('W')
-last_12_weeks_data['Moving Time (min)'] = pd.to_numeric(last_12_weeks_data['Moving Time (min)'], errors='coerce')
-last_12_weeks_data['Distance (km)'] = pd.to_numeric(last_12_weeks_data['Distance (km)'], errors='coerce')
+last_12_weeks_data.loc[:, 'Week'] = last_12_weeks_data['Start Date'].dt.to_period('W')
+last_12_weeks_data.loc[:, 'Moving Time (min)'] = pd.to_numeric(last_12_weeks_data['Moving Time (min)'], errors='coerce')
+last_12_weeks_data.loc[:, 'Distance (km)'] = pd.to_numeric(last_12_weeks_data['Distance (km)'], errors='coerce')
+
 last_12_weeks_data = last_12_weeks_data.dropna(subset=['Moving Time (min)', 'Distance (km)'])
 
 col1, col2 = st.columns([1, 2])
@@ -45,9 +47,9 @@ with col1:
         activity_time = f"{row['Moving Time (min)']:.0f} min"
         activity_elevation = f"{row['Total Elevation Gain (m)']} m"
         activity_date = pd.to_datetime(row['Start Date']).strftime('%d/%m/%y')
-        
+
         activity_details = f"{activity_name} - {activity_type} {activity_distance} {activity_time} {activity_elevation} {activity_date}"
-        
+
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; background-color: #f0f0f0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
@@ -62,14 +64,14 @@ with col1:
 
 with col2:
     st.markdown("<h3 style='text-align: left;'>Select Sport</h3>", unsafe_allow_html=True)
-    
+
     activity_filter = st.selectbox("Select Activity Type:", ["All", "Cycling", "Run"])
-    
+
     if activity_filter == "Cycling":
         last_12_weeks_data = last_12_weeks_data[last_12_weeks_data['Type'].isin(['Ride', 'Virtual Ride'])]
     elif activity_filter == "Run":
         last_12_weeks_data = last_12_weeks_data[last_12_weeks_data['Type'] == 'Run']
-    
+
     data_type_filter = st.selectbox("Select Data Type:", ["Moving Time", "Distance"])
 
     weekly_data = last_12_weeks_data.groupby('Week').agg({
@@ -78,7 +80,7 @@ with col2:
         'Distance (km)': 'sum'
     }).reset_index()
 
-    weekly_data['Week'] = weekly_data['Week'].apply(lambda x: f"{x.start_time.day:02}/{x.start_time.month:02}")
+    weekly_data.loc[:, 'Week'] = weekly_data['Week'].apply(lambda x: f"{x.start_time.day:02}/{x.start_time.month:02}")
 
     # Displaying the information with time in hours (XX.XX hours format) and bold pattern for all three columns
     time_in_hours = weekly_data['Moving Time (min)'] / 60
@@ -172,9 +174,9 @@ with col2:
 
     clicked_data = selected_points[0]
     clicked_week = clicked_data['x']
-    
+
     selected_data = weekly_data[weekly_data['Week'] == clicked_week].iloc[0]
-    
+
     # Displaying the information with time in hours (XX.XX hours format) and bold pattern for all three columns
     time_in_hours = selected_data['Moving Time (min)'] / 60
     distance = selected_data['Distance (km)']
